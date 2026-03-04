@@ -230,11 +230,12 @@
 
         const WALL = 1;
         const DOT = 2;
+        const POWER = 3;
         const EMPTY = 0;
 
         const maze = [
             [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-            [1,2,2,2,2,2,2,2,2,1,1,2,2,2,2,2,2,2,2,1],
+            [1,3,2,2,2,2,2,2,2,1,1,2,2,2,2,2,2,2,3,1],
             [1,2,1,1,2,1,1,1,2,1,1,2,1,1,1,2,1,1,2,1],
             [1,2,1,1,2,1,1,1,2,1,1,2,1,1,1,2,1,1,2,1],
             [1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1],
@@ -251,7 +252,7 @@
             [1,2,1,1,2,1,1,1,2,1,1,2,1,1,1,2,1,1,2,1],
             [1,2,2,1,2,2,2,2,2,0,0,2,2,2,2,2,1,2,2,1],
             [1,1,2,1,2,1,2,1,1,1,1,1,1,2,1,2,1,2,1,1],
-            [1,2,2,2,2,1,2,2,2,1,1,2,2,2,1,2,2,2,2,1],
+            [1,3,2,2,2,1,2,2,2,1,1,2,2,2,1,2,2,2,3,1],
             [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
         ];
 
@@ -266,6 +267,20 @@
         let gameOver = false;
         let mouthOpen = 0;
         let mouthDir = 1;
+        let ghostsVulnerable = false;
+        let powerModeTimeout = null;
+        
+        function activatePowerMode() {
+            ghostsVulnerable = true;
+            
+            // Reset any existing timeout
+            if (powerModeTimeout) clearTimeout(powerModeTimeout);
+            
+            // 10 seconds of power mode
+            powerModeTimeout = setTimeout(() => {
+                ghostsVulnerable = false;
+            }, 10000);
+        }
 
         function draw() {
             ctx.fillStyle = '#000';
@@ -284,6 +299,13 @@
                         ctx.fillStyle = '#FFB897';
                         ctx.beginPath();
                         ctx.arc(px + TILE_SIZE/2, py + TILE_SIZE/2, 3, 0, Math.PI * 2);
+                        ctx.fill();
+                    } else if (tile === POWER) {
+                        // Power pellet - pulsing animation
+                        const pulse = Math.sin(Date.now() / 100) * 2 + 6;
+                        ctx.fillStyle = '#FFD700';
+                        ctx.beginPath();
+                        ctx.arc(px + TILE_SIZE/2, py + TILE_SIZE/2, pulse, 0, Math.PI * 2);
                         ctx.fill();
                     }
                 }
@@ -308,25 +330,35 @@
                 const gx = ghost.x * TILE_SIZE;
                 const gy = ghost.y * TILE_SIZE;
                 
-                ctx.fillStyle = ghost.color;
+                // Use blue if vulnerable, otherwise normal color
+                ctx.fillStyle = ghostsVulnerable ? '#2143DF' : ghost.color;
                 ctx.beginPath();
                 ctx.arc(gx + TILE_SIZE/2, gy + TILE_SIZE/2 - 2, TILE_SIZE/2 - 3, Math.PI, 0);
                 ctx.lineTo(gx + TILE_SIZE - 3, gy + TILE_SIZE);
                 ctx.lineTo(gx + 3, gy + TILE_SIZE);
                 ctx.fill();
 
-                // Eyes
-                ctx.fillStyle = '#FFF';
-                ctx.beginPath();
-                ctx.arc(gx + 6, gy + 8, 4, 0, Math.PI * 2);
-                ctx.arc(gx + 14, gy + 8, 4, 0, Math.PI * 2);
-                ctx.fill();
-                
-                ctx.fillStyle = '#000';
-                ctx.beginPath();
-                ctx.arc(gx + 6, gy + 8, 2, 0, Math.PI * 2);
-                ctx.arc(gx + 14, gy + 8, 2, 0, Math.PI * 2);
-                ctx.fill();
+                if (!ghostsVulnerable) {
+                    // Eyes (only when not vulnerable)
+                    ctx.fillStyle = '#FFF';
+                    ctx.beginPath();
+                    ctx.arc(gx + 6, gy + 8, 4, 0, Math.PI * 2);
+                    ctx.arc(gx + 14, gy + 8, 4, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    ctx.fillStyle = '#000';
+                    ctx.beginPath();
+                    ctx.arc(gx + 6, gy + 8, 2, 0, Math.PI * 2);
+                    ctx.arc(gx + 14, gy + 8, 2, 0, Math.PI * 2);
+                    ctx.fill();
+                } else {
+                    // Scared eyes
+                    ctx.fillStyle = '#FFF';
+                    ctx.beginPath();
+                    ctx.arc(gx + 7, gy + 10, 3, 0, Math.PI * 2);
+                    ctx.arc(gx + 13, gy + 10, 3, 0, Math.PI * 2);
+                    ctx.fill();
+                }
             });
         }
 
@@ -360,13 +392,21 @@
                     score += 10;
                     document.getElementById('scoreValue').textContent = score;
                 }
+                
+                // Eat power pellet
+                if (maze[pacman.y][pacman.x] === POWER) {
+                    maze[pacman.y][pacman.x] = EMPTY;
+                    score += 50;
+                    document.getElementById('scoreValue').textContent = score;
+                    activatePowerMode();
+                }
             }
         }
 
         function moveGhosts() {
             const dirs = ['up', 'down', 'left', 'right'];
             
-            ghosts.forEach(ghost => {
+            ghosts.forEach((ghost, index) => {
                 const dir = dirs[Math.floor(Math.random() * dirs.length)];
                 const d = {
                     up: { x: 0, y: -1 },
@@ -385,7 +425,15 @@
 
                 // Check collision with Pac-Man
                 if (ghost.x === pacman.x && ghost.y === pacman.y) {
-                    endGame();
+                    if (ghostsVulnerable) {
+                        // Eat vulnerable ghost - respawn at center
+                        ghost.x = 9 + (index % 2);
+                        ghost.y = 10 + Math.floor(index / 2);
+                        score += 200;
+                        document.getElementById('scoreValue').textContent = score;
+                    } else {
+                        endGame();
+                    }
                 }
             });
         }
@@ -397,12 +445,15 @@
         }
 
         function restartGame() {
-            // Reset maze
+            // Reset maze with power pellets in corners
+            const powerPositions = [[1,1], [1,18], [18,1], [18,18]];
             for (let y = 0; y < ROWS; y++) {
                 for (let x = 0; x < COLS; x++) {
                     if (maze[y][x] === EMPTY && !(x === 9 && y === 10) && !(x === 10 && y === 10) && 
                         !(x === 9 && y === 11) && !(x === 10 && y === 11) && !(x === 10 && y === 16)) {
-                        maze[y][x] = DOT;
+                        // Check if this is a power pellet position
+                        const isPower = powerPositions.some(p => p[0] === x && p[1] === y);
+                        maze[y][x] = isPower ? POWER : DOT;
                     }
                 }
             }
@@ -416,6 +467,8 @@
             ];
             score = 0;
             gameOver = false;
+            ghostsVulnerable = false;
+            if (powerModeTimeout) clearTimeout(powerModeTimeout);
             document.getElementById('scoreValue').textContent = '0';
             document.getElementById('gameOver').style.display = 'none';
         }
