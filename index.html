@@ -271,10 +271,14 @@
             </div>
         </div>
         <div class="controls-right">
+            <button class="dpad action-btn" id="muteBtn" onclick="toggleMute()">
+                <span>🔊</span>
+                <span>SOUND</span>
+            </button>
             <button class="dpad action-btn" id="pauseBtn">
-            <span>⏸</span>
-            <span>START/STOP</span>
-        </button>
+                <span>⏸</span>
+                <span>START/STOP</span>
+            </button>
         </div>
     </div>
     <div id="gameOver">
@@ -345,6 +349,81 @@
         let mouthDir = 1;
         let ghostsVulnerable = false;
         let powerModeTimeout = null;
+        let soundMuted = false;
+        
+        // Audio Context (lazy load on user interaction)
+        let audioCtx = null;
+        
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            return audioCtx;
+        }
+        
+        function playSound(type) {
+            if (soundMuted || !audioCtx) return;
+            
+            const ctx = audioCtx;
+            const now = ctx.currentTime;
+            
+            if (type === 'eat') {
+                // Waka waka - two quick beeps
+                for (let i = 0; i < 2; i++) {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.type = 'square';
+                    osc.frequency.setValueAtTime(800 + i * 200, now + i * 0.1);
+                    gain.gain.setValueAtTime(0.1, now + i * 0.1);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.1 + 0.08);
+                    osc.start(now + i * 0.1);
+                    osc.stop(now + i * 0.1 + 0.08);
+                }
+            } else if (type === 'power') {
+                // Power pellet - rising tone
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(400, now);
+                osc.frequency.exponentialRampToValueAtTime(1200, now + 0.3);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+                osc.start(now);
+                osc.stop(now + 0.5);
+            } else if (type === 'ghost') {
+                // Ghost eat - descending tone
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(600, now);
+                osc.frequency.exponentialRampToValueAtTime(200, now + 0.2);
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                osc.start(now);
+                osc.stop(now + 0.3);
+            } else if (type === 'death') {
+                // Death - descending melody
+                const notes = [800, 600, 400, 200];
+                notes.forEach((freq, i) => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.type = 'square';
+                    osc.frequency.setValueAtTime(freq, now + i * 0.15);
+                    gain.gain.setValueAtTime(0.15, now + i * 0.15);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.15 + 0.12);
+                    osc.start(now + i * 0.15);
+                    osc.stop(now + i * 0.15 + 0.12);
+                });
+            }
+        }
         
         function activatePowerMode() {
             ghostsVulnerable = true;
@@ -467,6 +546,7 @@
                     maze[pacman.y][pacman.x] = EMPTY;
                     score += 10;
                     document.getElementById('scoreValue').textContent = score;
+                    playSound('eat');
                 }
                 
                 // Eat power pellet
@@ -474,6 +554,7 @@
                     maze[pacman.y][pacman.x] = EMPTY;
                     score += 50;
                     document.getElementById('scoreValue').textContent = score;
+                    playSound('power');
                     activatePowerMode();
                 }
             }
@@ -507,7 +588,9 @@
                         ghost.y = 10 + Math.floor(index / 2);
                         score += 200;
                         document.getElementById('scoreValue').textContent = score;
+                        playSound('ghost');
                     } else {
+                        playSound('death');
                         endGame();
                     }
                 }
@@ -660,6 +743,9 @@
         }
 
         function startGame() {
+            // Initialize audio on first interaction
+            initAudio();
+            
             if (gameStarted) {
                 // Restart game
                 restartGame();
@@ -689,6 +775,14 @@
             if (gameRunning) {
                 gameLoop();
             }
+        }
+        
+        function toggleMute() {
+            soundMuted = !soundMuted;
+            const btn = document.getElementById('muteBtn');
+            btn.innerHTML = soundMuted 
+                ? '<span>🔇</span><span>MUTED</span>' 
+                : '<span>🔊</span><span>SOUND</span>';
         }
 
         // Initialize maze with dots
