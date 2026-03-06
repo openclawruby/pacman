@@ -193,6 +193,8 @@
             font-size: 0.5rem;
             opacity: 0.8;
         }
+        
+        .action-btn:active {
             background: rgba(255, 50, 50, 0.8) !important;
         }
         
@@ -743,12 +745,17 @@
         }
 
         function startGame() {
+            console.log('Start button clicked!');
+            
             // Initialize audio on first interaction
             initAudio();
             
             if (gameStarted) {
                 // Restart game
+                console.log('Restarting game...');
                 restartGame();
+            } else {
+                console.log('Starting new game...');
             }
             gameStarted = true;
             gameRunning = true;
