@@ -61,6 +61,21 @@
 ---
 
 ## Future Considerations
-- Add levels
-- Add ghosts
-- Add more game features
+
+### Sprint 4: Ghosts & AI (In Planning)
+- 4 unique ghost personalities (Blinky, Pinky, Inky, Clyde)
+- Ghost AI with chase/scatter/frightened modes
+- Pathfinding (A*/BFS)
+- Power pellet mechanics
+- See `SPRINT_4_PLAN.md` for details
+
+### Sprint 5: Levels & Progression (Planned)
+- Multiple levels with increasing difficulty
+- Level transitions
+- Bonus fruits/items
+- Cutscenes between levels
+
+### Future Sprites
+- More game features
+- High score persistence
+- Multiplayer mode?
