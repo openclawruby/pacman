@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pac-Man v2.0 - Ghost AI Update</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pac-Man v2.3 - UX Polish Update</title>
     <style>
         * {
             margin: 0;
@@ -19,6 +19,7 @@
             justify-content: center;
             font-family: 'Courier New', monospace;
             color: #fff;
+            overflow: hidden;
         }
         h1 {
             color: #FFFF00;
@@ -117,8 +118,436 @@
             text-align: center;
         }
         
+        #startScreen .menu-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        
+        #startScreen .menu-btn {
+            padding: 0.7rem 1.5rem;
+            font-size: 1rem;
+            background: #333;
+            color: #fff;
+            border: 2px solid #555;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        #startScreen .menu-btn:hover {
+            background: #444;
+            border-color: #FFD700;
+        }
+        
         #startScreen.hidden {
             display: none;
+        }
+        
+        /* Settings Modal */
+        #settingsModal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 300;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        #settingsModal .modal-content {
+            background: #1a1a2e;
+            border: 3px solid #FFD700;
+            border-radius: 15px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        #settingsModal h2 {
+            color: #FFD700;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            font-size: 2rem;
+        }
+        
+        .setting-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .setting-group h3 {
+            color: #00FFFF;
+            margin-bottom: 0.8rem;
+            font-size: 1.2rem;
+        }
+        
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.8rem 0;
+            border-bottom: 1px solid #333;
+        }
+        
+        .setting-item label {
+            color: #fff;
+            font-size: 1rem;
+        }
+        
+        .setting-item select,
+        .setting-item input[type="range"] {
+            background: #333;
+            color: #fff;
+            border: 1px solid #555;
+            padding: 0.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        .setting-item input[type="range"] {
+            width: 150px;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            width: 60px;
+            height: 30px;
+            background: #333;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .toggle-switch.active {
+            background: #00FF00;
+        }
+        
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 24px;
+            height: 24px;
+            background: #fff;
+            border-radius: 50%;
+            transition: transform 0.3s;
+        }
+        
+        .toggle-switch.active::after {
+            transform: translateX(30px);
+        }
+        
+        .close-btn {
+            display: block;
+            margin: 1.5rem auto 0;
+            padding: 0.8rem 2rem;
+            font-size: 1.1rem;
+            background: #FFD700;
+            color: #000;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .close-btn:hover {
+            transform: scale(1.05);
+        }
+        
+        /* Tutorial Modal */
+        #tutorialModal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 300;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        #tutorialModal .modal-content {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border: 3px solid #00FFFF;
+            border-radius: 15px;
+            padding: 2rem;
+            max-width: 600px;
+            width: 90%;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+        
+        #tutorialModal h2 {
+            color: #00FFFF;
+            text-align: center;
+            margin-bottom: 0.5rem;
+            font-size: 2rem;
+        }
+        
+        #tutorialModal .tutorial-subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 1.5rem;
+        }
+        
+        .tutorial-step {
+            background: rgba(255, 255, 255, 0.05);
+            border-left: 4px solid #00FFFF;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .tutorial-step h3 {
+            color: #FFD700;
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+        
+        .tutorial-step p {
+            color: #ccc;
+            line-height: 1.5;
+        }
+        
+        .tutorial-step .tip {
+            color: #00FF00;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+            font-style: italic;
+        }
+        
+        .tutorial-nav {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 1.5rem;
+        }
+        
+        .tutorial-nav button {
+            padding: 0.8rem 1.5rem;
+            font-size: 1rem;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .tutorial-nav .prev-btn {
+            background: #333;
+            color: #fff;
+        }
+        
+        .tutorial-nav .next-btn {
+            background: #00FFFF;
+            color: #000;
+        }
+        
+        .tutorial-nav .start-btn {
+            background: #00FF00;
+            color: #000;
+        }
+        
+        .tutorial-nav button:hover {
+            transform: scale(1.05);
+        }
+        
+        .tutorial-nav button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .tutorial-progress {
+            text-align: center;
+            color: #888;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+        }
+        
+        /* Pause Menu */
+        #pauseMenu {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 250;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        #pauseMenu .modal-content {
+            background: #1a1a2e;
+            border: 3px solid #FFD700;
+            border-radius: 15px;
+            padding: 2rem;
+            text-align: center;
+            min-width: 300px;
+        }
+        
+        #pauseMenu h2 {
+            color: #FFD700;
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        #pauseMenu .pause-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        #pauseMenu .pause-btn {
+            padding: 1rem 2rem;
+            font-size: 1.2rem;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        #pauseMenu .resume-btn {
+            background: #00FF00;
+            color: #000;
+        }
+        
+        #pauseMenu .settings-btn {
+            background: #00FFFF;
+            color: #000;
+        }
+        
+        #pauseMenu .quit-btn {
+            background: #FF4444;
+            color: #fff;
+        }
+        
+        #pauseMenu .pause-btn:hover {
+            transform: scale(1.05);
+        }
+        
+        /* Achievements Panel */
+        #achievementsPanel {
+            display: none;
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #FFD700;
+            border-radius: 10px;
+            padding: 1rem;
+            z-index: 400;
+            max-width: 300px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        #achievementsPanel h3 {
+            color: #FFD700;
+            margin-bottom: 0.8rem;
+            text-align: center;
+        }
+        
+        .achievement {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            padding: 0.5rem;
+            margin-bottom: 0.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            opacity: 0.5;
+        }
+        
+        .achievement.unlocked {
+            opacity: 1;
+            background: rgba(255, 215, 0, 0.1);
+            border: 1px solid #FFD700;
+        }
+        
+        .achievement-icon {
+            font-size: 2rem;
+            width: 40px;
+            text-align: center;
+        }
+        
+        .achievement-info h4 {
+            color: #fff;
+            font-size: 0.9rem;
+            margin-bottom: 0.2rem;
+        }
+        
+        .achievement-info p {
+            color: #888;
+            font-size: 0.75rem;
+        }
+        
+        /* Achievement Notification */
+        .achievement-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            color: #000;
+            padding: 1rem 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(255, 215, 0, 0.4);
+            z-index: 500;
+            animation: slideIn 0.5s ease, slideOut 0.5s ease 2.5s;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(400px); opacity: 0; }
+        }
+        
+        .achievement-notification .icon {
+            font-size: 2.5rem;
+        }
+        
+        .achievement-notification .text h4 {
+            font-size: 1rem;
+            margin-bottom: 0.2rem;
+        }
+        
+        .achievement-notification .text p {
+            font-size: 0.8rem;
+            opacity: 0.8;
+        }
+        
+        /* Particle Effects */
+        .particle {
+            position: absolute;
+            pointer-events: none;
+            border-radius: 50%;
+            animation: particleFade 1s ease-out forwards;
+        }
+        
+        @keyframes particleFade {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(0);
+                opacity: 0;
+            }
         }
         
         /* Game Over Screen */
@@ -208,6 +637,33 @@
         #levelComplete .next-level {
             color: #888;
             margin-bottom: 1rem;
+        }
+        
+        /* Countdown Overlay */
+        #countdownOverlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 350;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        #countdownOverlay .countdown-number {
+            font-size: 10rem;
+            color: #FFD700;
+            text-shadow: 0 0 30px #FFD700;
+            animation: countdownPulse 1s ease;
+        }
+        
+        @keyframes countdownPulse {
+            0% { transform: scale(0.5); opacity: 0; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
         }
         
         /* Mobile Controls */
@@ -333,6 +789,11 @@
             #gameOver h2 {
                 font-size: 1.8rem;
             }
+            #settingsModal .modal-content,
+            #tutorialModal .modal-content {
+                width: 95%;
+                padding: 1.5rem;
+            }
         }
         
         @media (max-width: 768px) and (orientation: landscape) {
@@ -379,7 +840,7 @@
                 <span>🔊</span>
                 <span>SOUND</span>
             </button>
-            <button class="dpad action-btn" id="pauseBtn">
+            <button class="dpad action-btn" id="pauseBtnMobile">
                 <span>⏸</span>
                 <span>PAUSE</span>
             </button>
@@ -389,17 +850,112 @@
     <!-- Start Screen -->
     <div id="startScreen">
         <h1>PAC-MAN</h1>
-        <p class="version">v2.0 - Ghost AI Update</p>
+        <p class="version">v2.3 - UX Polish Update</p>
         <p class="subtitle">Classic Arcade Game</p>
         <button id="startBtn" class="start-button">START GAME</button>
+        <div class="menu-buttons">
+            <button class="menu-btn" id="tutorialBtn">📚 Tutorial</button>
+            <button class="menu-btn" id="settingsBtn">⚙️ Settings</button>
+            <button class="menu-btn" id="achievementsBtn">🏆 Achievements</button>
+        </div>
         <p class="controls-info">
             🎮 Arrow Keys or Touch to Move<br>
             💊 Power Pellets make ghosts vulnerable<br>
             👻 Avoid the 4 ghost personalities!
         </p>
         <p class="features">
-            ✨ New: 4 Ghost AI Personalities • Multiple Levels • Enhanced UI
+            ✨ New: Tutorial • Settings • Achievements • Enhanced UX
         </p>
+    </div>
+    
+    <!-- Settings Modal -->
+    <div id="settingsModal">
+        <div class="modal-content">
+            <h2>⚙️ Settings</h2>
+            
+            <div class="setting-group">
+                <h3>🔊 Audio</h3>
+                <div class="setting-item">
+                    <label>Sound Effects</label>
+                    <div class="toggle-switch active" id="soundToggle" onclick="toggleSetting('sound')"></div>
+                </div>
+                <div class="setting-item">
+                    <label>Volume</label>
+                    <input type="range" id="volumeSlider" min="0" max="100" value="70" onchange="updateVolume()">
+                </div>
+            </div>
+            
+            <div class="setting-group">
+                <h3>🎮 Gameplay</h3>
+                <div class="setting-item">
+                    <label>Difficulty</label>
+                    <select id="difficultySelect" onchange="updateDifficulty()">
+                        <option value="easy">Easy</option>
+                        <option value="normal" selected>Normal</option>
+                        <option value="hard">Hard</option>
+                    </select>
+                </div>
+                <div class="setting-item">
+                    <label>Show Ghost Names</label>
+                    <div class="toggle-switch active" id="ghostNamesToggle" onclick="toggleSetting('ghostNames')"></div>
+                </div>
+            </div>
+            
+            <div class="setting-group">
+                <h3>✨ Visual</h3>
+                <div class="setting-item">
+                    <label>Particle Effects</label>
+                    <div class="toggle-switch active" id="particlesToggle" onclick="toggleSetting('particles')"></div>
+                </div>
+                <div class="setting-item">
+                    <label>Screen Shake</label>
+                    <div class="toggle-switch" id="shakeToggle" onclick="toggleSetting('shake')"></div>
+                </div>
+            </div>
+            
+            <button class="close-btn" onclick="closeSettings()">Done</button>
+        </div>
+    </div>
+    
+    <!-- Tutorial Modal -->
+    <div id="tutorialModal">
+        <div class="modal-content">
+            <h2>📚 How to Play</h2>
+            <p class="tutorial-subtitle">Master Pac-Man in 5 simple steps!</p>
+            
+            <div id="tutorialSteps"></div>
+            
+            <div class="tutorial-nav">
+                <button class="prev-btn" onclick="prevTutorialStep()">← Previous</button>
+                <button class="next-btn" onclick="nextTutorialStep()">Next →</button>
+            </div>
+            
+            <div class="tutorial-progress" id="tutorialProgress"></div>
+        </div>
+    </div>
+    
+    <!-- Pause Menu -->
+    <div id="pauseMenu">
+        <div class="modal-content">
+            <h2>⏸️ PAUSED</h2>
+            <div class="pause-buttons">
+                <button class="pause-btn resume-btn" onclick="togglePause()">▶️ Resume</button>
+                <button class="pause-btn settings-btn" onclick="openSettingsFromPause()">⚙️ Settings</button>
+                <button class="pause-btn quit-btn" onclick="quitToMenu()">🏠 Quit to Menu</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Achievements Panel -->
+    <div id="achievementsPanel">
+        <h3>🏆 Achievements</h3>
+        <div id="achievementsList"></div>
+        <button class="close-btn" style="margin-top: 1rem;" onclick="closeAchievements()">Close</button>
+    </div>
+    
+    <!-- Countdown Overlay -->
+    <div id="countdownOverlay">
+        <div class="countdown-number" id="countdownNumber">3</div>
     </div>
     
     <!-- Game Over Screen -->
@@ -441,12 +997,51 @@
         let lives = 3;
         let highScore = localStorage.getItem('pacman_highscore') || 0;
         
-        // Ghost Personalities (Sprint 4 Feature!)
+        // Settings
+        let settings = {
+            sound: true,
+            volume: 0.7,
+            difficulty: 'normal',
+            ghostNames: true,
+            particles: true,
+            shake: false
+        };
+        
+        // Load settings from localStorage
+        if (localStorage.getItem('pacman_settings')) {
+            settings = JSON.parse(localStorage.getItem('pacman_settings'));
+        }
+        
+        // Achievements
+        const achievements = [
+            { id: 'first_blood', name: 'First Blood', desc: 'Eat your first ghost', icon: '👻', unlocked: false },
+            { id: 'pac_1000', name: 'Century Club', desc: 'Score 1000 points', icon: '💯', unlocked: false },
+            { id: 'pac_5000', name: 'Ghost Hunter', desc: 'Score 5000 points', icon: '🎯', unlocked: false },
+            { id: 'level_5', name: 'Veteran', desc: 'Reach Level 5', icon: '⭐', unlocked: false },
+            { id: 'level_10', name: 'Master', desc: 'Reach Level 10', icon: '👑', unlocked: false },
+            { id: 'perfect', name: 'Perfectionist', desc: 'Clear a level without dying', icon: '💎', unlocked: false },
+            { id: 'combo_5', name: 'Combo King', desc: 'Eat 5 ghosts in one power mode', icon: '🔥', unlocked: false },
+            { id: 'survivor', name: 'Survivor', desc: 'Reach level 3 with only 1 life', icon: '❤️', unlocked: false }
+        ];
+        
+        // Load achievements from localStorage
+        if (localStorage.getItem('pacman_achievements')) {
+            const saved = JSON.parse(localStorage.getItem('pacman_achievements'));
+            achievements.forEach(a => {
+                const found = saved.find(s => s.id === a.id);
+                if (found) a.unlocked = found.unlocked;
+            });
+        }
+        
+        let ghostsEatenInPowerMode = 0;
+        let deathsInCurrentLevel = 0;
+        
+        // Ghost Personalities
         const GHOST_TYPES = {
-            BLINKY: 'blinky',    // Red - Direct chase
-            PINKY: 'pinky',      // Pink - Ambush ahead
-            INKY: 'inky',        // Cyan - Unpredictable
-            CLYDE: 'clyde'       // Orange - Random/scatter
+            BLINKY: 'blinky',
+            PINKY: 'pinky',
+            INKY: 'inky',
+            CLYDE: 'clyde'
         };
 
         const maze = [
@@ -474,40 +1069,11 @@
 
         let pacman = { x: 10, y: 16, dir: 'left', nextDir: 'left' };
         
-        // Ghost AI Implementation (Sprint 4!)
         let ghosts = [
-            { 
-                x: 9, y: 10, 
-                color: '#FF0000', 
-                dir: 'up',
-                type: GHOST_TYPES.BLINKY,
-                name: 'Blinky',
-                speed: 1
-            },
-            { 
-                x: 10, y: 10, 
-                color: '#FFB8FF', 
-                dir: 'up',
-                type: GHOST_TYPES.PINKY,
-                name: 'Pinky',
-                speed: 1
-            },
-            { 
-                x: 9, y: 11, 
-                color: '#00FFFF', 
-                dir: 'up',
-                type: GHOST_TYPES.INKY,
-                name: 'Inky',
-                speed: 1
-            },
-            { 
-                x: 10, y: 11, 
-                color: '#FFB852', 
-                dir: 'up',
-                type: GHOST_TYPES.CLYDE,
-                name: 'Clyde',
-                speed: 1
-            }
+            { x: 9, y: 10, color: '#FF0000', dir: 'up', type: GHOST_TYPES.BLINKY, name: 'Blinky', speed: 1 },
+            { x: 10, y: 10, color: '#FFB8FF', dir: 'up', type: GHOST_TYPES.PINKY, name: 'Pinky', speed: 1 },
+            { x: 9, y: 11, color: '#00FFFF', dir: 'up', type: GHOST_TYPES.INKY, name: 'Inky', speed: 1 },
+            { x: 10, y: 11, color: '#FFB852', dir: 'up', type: GHOST_TYPES.CLYDE, name: 'Clyde', speed: 1 }
         ];
         
         let score = 0;
@@ -520,6 +1086,10 @@
         let powerModeTimeout = null;
         let soundMuted = false;
         let levelTransition = false;
+        let isPaused = false;
+        
+        // Particles array for effects
+        let particles = [];
         
         // Audio Context
         let audioCtx = null;
@@ -532,10 +1102,11 @@
         }
         
         function playSound(type) {
-            if (soundMuted || !audioCtx) return;
+            if (!settings.sound || soundMuted || !audioCtx) return;
             
             const ctx = audioCtx;
             const now = ctx.currentTime;
+            const volume = settings.volume * 0.2;
             
             if (type === 'eat') {
                 for (let i = 0; i < 2; i++) {
@@ -545,7 +1116,7 @@
                     gain.connect(ctx.destination);
                     osc.type = 'square';
                     osc.frequency.setValueAtTime(800 + i * 200, now + i * 0.1);
-                    gain.gain.setValueAtTime(0.1, now + i * 0.1);
+                    gain.gain.setValueAtTime(volume, now + i * 0.1);
                     gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.1 + 0.08);
                     osc.start(now + i * 0.1);
                     osc.stop(now + i * 0.1 + 0.08);
@@ -558,7 +1129,7 @@
                 osc.type = 'sine';
                 osc.frequency.setValueAtTime(400, now);
                 osc.frequency.exponentialRampToValueAtTime(1200, now + 0.3);
-                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.setValueAtTime(volume, now);
                 gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
                 osc.start(now);
                 osc.stop(now + 0.5);
@@ -570,7 +1141,7 @@
                 osc.type = 'square';
                 osc.frequency.setValueAtTime(600, now);
                 osc.frequency.exponentialRampToValueAtTime(200, now + 0.2);
-                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.setValueAtTime(volume, now);
                 gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
                 osc.start(now);
                 osc.stop(now + 0.3);
@@ -583,7 +1154,7 @@
                     gain.connect(ctx.destination);
                     osc.type = 'square';
                     osc.frequency.setValueAtTime(freq, now + i * 0.15);
-                    gain.gain.setValueAtTime(0.15, now + i * 0.15);
+                    gain.gain.setValueAtTime(volume, now + i * 0.15);
                     gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.15 + 0.12);
                     osc.start(now + i * 0.15);
                     osc.stop(now + i * 0.15 + 0.12);
@@ -597,26 +1168,159 @@
                     gain.connect(ctx.destination);
                     osc.type = 'sine';
                     osc.frequency.setValueAtTime(freq, now + i * 0.1);
-                    gain.gain.setValueAtTime(0.15, now + i * 0.1);
+                    gain.gain.setValueAtTime(volume, now + i * 0.1);
                     gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.1 + 0.08);
                     osc.start(now + i * 0.1);
                     osc.stop(now + i * 0.1 + 0.08);
+                });
+            } else if (type === 'achievement') {
+                const notes = [523, 659, 784, 1047];
+                notes.forEach((freq, i) => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, now + i * 0.15);
+                    gain.gain.setValueAtTime(volume * 1.5, now + i * 0.15);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.15 + 0.12);
+                    osc.start(now + i * 0.15);
+                    osc.stop(now + i * 0.15 + 0.12);
                 });
             }
         }
         
         function activatePowerMode() {
             ghostsVulnerable = true;
+            ghostsEatenInPowerMode = 0;
             
             if (powerModeTimeout) clearTimeout(powerModeTimeout);
             
-            // Power mode duration decreases with level (Sprint 4 feature!)
             const duration = Math.max(3000, 10000 - (currentLevel - 1) * 1000);
             powerModeTimeout = setTimeout(() => {
                 ghostsVulnerable = false;
             }, duration);
         }
-
+        
+        // Particle effects
+        function createParticles(x, y, color, count = 10) {
+            if (!settings.particles) return;
+            
+            const canvasRect = canvas.getBoundingClientRect();
+            const screenX = canvasRect.left + x * TILE_SIZE;
+            const screenY = canvasRect.top + y * TILE_SIZE;
+            
+            for (let i = 0; i < count; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = screenX + 'px';
+                particle.style.top = screenY + 'px';
+                particle.style.width = (Math.random() * 8 + 4) + 'px';
+                particle.style.height = particle.style.width;
+                particle.style.background = color;
+                
+                const angle = (Math.PI * 2 / count) * i;
+                const velocity = Math.random() * 50 + 30;
+                const tx = Math.cos(angle) * velocity;
+                const ty = Math.sin(angle) * velocity;
+                
+                particle.style.transform = `translate(${tx}px, ${ty}px)`;
+                document.body.appendChild(particle);
+                
+                setTimeout(() => particle.remove(), 1000);
+            }
+        }
+        
+        // Screen shake effect
+        function screenShake() {
+            if (!settings.shake) return;
+            
+            canvas.style.animation = 'shake 0.3s ease';
+            setTimeout(() => {
+                canvas.style.animation = '';
+            }, 300);
+        }
+        
+        // Add shake animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes shake {
+                0%, 100% { transform: translateX(0); }
+                25% { transform: translateX(-5px); }
+                75% { transform: translateX(5px); }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // Achievement system
+        function unlockAchievement(id) {
+            const achievement = achievements.find(a => a.id === id);
+            if (achievement && !achievement.unlocked) {
+                achievement.unlocked = true;
+                saveAchievements();
+                showAchievementNotification(achievement);
+                playSound('achievement');
+            }
+        }
+        
+        function saveAchievements() {
+            localStorage.setItem('pacman_achievements', JSON.stringify(achievements));
+        }
+        
+        function showAchievementNotification(achievement) {
+            const notification = document.createElement('div');
+            notification.className = 'achievement-notification';
+            notification.innerHTML = `
+                <div class="icon">${achievement.icon}</div>
+                <div class="text">
+                    <h4>Achievement Unlocked!</h4>
+                    <p>${achievement.name}</p>
+                </div>
+            `;
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 3000);
+        }
+        
+        function checkAchievements() {
+            // First Blood
+            if (score >= 10 && !achievements.find(a => a.id === 'first_blood').unlocked) {
+                unlockAchievement('first_blood');
+            }
+            // Century Club
+            if (score >= 1000 && !achievements.find(a => a.id === 'pac_1000').unlocked) {
+                unlockAchievement('pac_1000');
+            }
+            // Ghost Hunter
+            if (score >= 5000 && !achievements.find(a => a.id === 'pac_5000').unlocked) {
+                unlockAchievement('pac_5000');
+            }
+            // Veteran
+            if (currentLevel >= 5 && !achievements.find(a => a.id === 'level_5').unlocked) {
+                unlockAchievement('level_5');
+            }
+            // Master
+            if (currentLevel >= 10 && !achievements.find(a => a.id === 'level_10').unlocked) {
+                unlockAchievement('level_10');
+            }
+            // Combo King
+            if (ghostsEatenInPowerMode >= 5 && !achievements.find(a => a.id === 'combo_5').unlocked) {
+                unlockAchievement('combo_5');
+            }
+        }
+        
+        function renderAchievements() {
+            const list = document.getElementById('achievementsList');
+            list.innerHTML = achievements.map(a => `
+                <div class="achievement ${a.unlocked ? 'unlocked' : ''}">
+                    <div class="achievement-icon">${a.icon}</div>
+                    <div class="achievement-info">
+                        <h4>${a.name}</h4>
+                        <p>${a.desc}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
         function draw() {
             ctx.fillStyle = '#000';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -659,7 +1363,7 @@
             ctx.lineTo(px, py);
             ctx.fill();
 
-            // Draw Ghosts with AI (Sprint 4!)
+            // Draw Ghosts
             ghosts.forEach(ghost => {
                 const gx = ghost.x * TILE_SIZE;
                 const gy = ghost.y * TILE_SIZE;
@@ -672,7 +1376,6 @@
                 ctx.fill();
 
                 if (!ghostsVulnerable) {
-                    // Eyes
                     ctx.fillStyle = '#FFF';
                     ctx.beginPath();
                     ctx.arc(gx + 6, gy + 8, 4, 0, Math.PI * 2);
@@ -685,14 +1388,12 @@
                     ctx.arc(gx + 14, gy + 8, 2, 0, Math.PI * 2);
                     ctx.fill();
                 } else {
-                    // Scared face
                     ctx.fillStyle = '#FFF';
                     ctx.beginPath();
                     ctx.arc(gx + 7, gy + 10, 3, 0, Math.PI * 2);
                     ctx.arc(gx + 13, gy + 10, 3, 0, Math.PI * 2);
                     ctx.fill();
                     
-                    // Wavy mouth
                     ctx.strokeStyle = '#FFF';
                     ctx.lineWidth = 2;
                     ctx.beginPath();
@@ -703,10 +1404,12 @@
                     ctx.stroke();
                 }
                 
-                // Ghost name tag (debug)
-                ctx.fillStyle = '#888';
-                ctx.font = '8px monospace';
-                ctx.fillText(ghost.name, gx, gy - 2);
+                // Ghost name tag
+                if (settings.ghostNames) {
+                    ctx.fillStyle = '#888';
+                    ctx.font = '8px monospace';
+                    ctx.fillText(ghost.name, gx, gy - 2);
+                }
             });
             
             // Update HUD
@@ -716,7 +1419,7 @@
         }
 
         function movePacman() {
-            if (gameOver || levelTransition) return;
+            if (gameOver || levelTransition || isPaused) return;
 
             const dirs = {
                 up: { x: 0, y: -1 },
@@ -743,6 +1446,7 @@
                     score += 10;
                     playSound('eat');
                     checkLevelComplete();
+                    checkAchievements();
                 }
                 
                 if (maze[pacman.y][pacman.x] === POWER) {
@@ -750,11 +1454,11 @@
                     score += 50;
                     playSound('power');
                     activatePowerMode();
+                    createParticles(pacman.x, pacman.y, '#FFD700', 15);
                 }
             }
         }
         
-        // Check if level is complete (Sprint 4!)
         function checkLevelComplete() {
             let dotsRemaining = 0;
             for (let y = 0; y < ROWS; y++) {
@@ -770,15 +1474,20 @@
             }
         }
         
-        // Level complete handler (Sprint 4!)
         function levelComplete() {
             levelTransition = true;
             gameRunning = false;
+            
+            // Check perfect level achievement
+            if (deathsInCurrentLevel === 0 && !achievements.find(a => a.id === 'perfect').unlocked && currentLevel > 1) {
+                unlockAchievement('perfect');
+            }
             
             document.getElementById('nextLevelNum').textContent = currentLevel + 1;
             document.getElementById('levelComplete').style.display = 'block';
             
             playSound('levelup');
+            createParticles(10, 10, '#00FF00', 30);
             
             setTimeout(() => {
                 currentLevel++;
@@ -790,9 +1499,7 @@
             }, 3000);
         }
         
-        // Reset level for next round (Sprint 4!)
         function resetLevel() {
-            // Reset positions
             pacman = { x: 10, y: 16, dir: 'left', nextDir: 'left' };
             ghosts = [
                 { x: 9, y: 10, color: '#FF0000', dir: 'up', type: GHOST_TYPES.BLINKY, name: 'Blinky', speed: 1 + (currentLevel - 1) * 0.2 },
@@ -801,7 +1508,6 @@
                 { x: 10, y: 11, color: '#FFB852', dir: 'up', type: GHOST_TYPES.CLYDE, name: 'Clyde', speed: 1 + (currentLevel - 1) * 0.2 }
             ];
             
-            // Reset maze
             for (let y = 0; y < ROWS; y++) {
                 for (let x = 0; x < COLS; x++) {
                     if (maze[y][x] === EMPTY && !(x === 9 && y === 10) && !(x === 10 && y === 10) && 
@@ -815,11 +1521,11 @@
             
             ghostsVulnerable = false;
             if (powerModeTimeout) clearTimeout(powerModeTimeout);
+            deathsInCurrentLevel = 0;
         }
 
-        // Ghost AI Movement (Sprint 4 - Core Feature!)
         function moveGhosts() {
-            if (levelTransition) return;
+            if (levelTransition || isPaused) return;
             
             const dirs = ['up', 'down', 'left', 'right'];
             const dirVectors = {
@@ -830,7 +1536,6 @@
             };
             
             ghosts.forEach((ghost, index) => {
-                // Get valid moves (not walls)
                 const validMoves = dirs.filter(d => {
                     const v = dirVectors[d];
                     const newX = ghost.x + v.x;
@@ -840,58 +1545,45 @@
                 
                 if (validMoves.length === 0) return;
                 
-                // Ghost AI Personalities (Sprint 4!)
                 let targetX, targetY;
                 
                 if (ghostsVulnerable) {
-                    // Run away from Pac-Man
                     targetX = pacman.x < ghost.x ? COLS - 1 : 0;
                     targetY = pacman.y < ghost.y ? ROWS - 1 : 0;
                 } else {
-                    // Different AI for each ghost type
                     switch (ghost.type) {
                         case GHOST_TYPES.BLINKY:
-                            // Direct chase - targets Pac-Man's current position
                             targetX = pacman.x;
                             targetY = pacman.y;
                             break;
-                            
                         case GHOST_TYPES.PINKY:
-                            // Ambush - targets 4 tiles ahead of Pac-Man
                             const ahead = dirVectors[pacman.dir];
                             targetX = pacman.x + ahead.x * 4;
                             targetY = pacman.y + ahead.y * 4;
                             break;
-                            
                         case GHOST_TYPES.INKY:
-                            // Unpredictable - uses vector between Blinky and Pac-Man
                             const blinky = ghosts[0];
                             const vectorX = (pacman.x - blinky.x) * 2;
                             const vectorY = (pacman.y - blinky.y) * 2;
                             targetX = blinky.x + vectorX;
                             targetY = blinky.y + vectorY;
                             break;
-                            
                         case GHOST_TYPES.CLYDE:
-                            // Random/scatter - chases when far, scatters when close
                             const dist = Math.abs(ghost.x - pacman.x) + Math.abs(ghost.y - pacman.y);
                             if (dist > 8) {
                                 targetX = pacman.x;
                                 targetY = pacman.y;
                             } else {
-                                // Scatter to bottom-left corner
                                 targetX = 0;
                                 targetY = ROWS - 1;
                             }
                             break;
-                            
                         default:
                             targetX = pacman.x;
                             targetY = pacman.y;
                     }
                 }
                 
-                // Choose move that gets closest to target
                 let bestMove = validMoves[0];
                 let bestDist = Infinity;
                 
@@ -907,30 +1599,31 @@
                     }
                 });
                 
-                // Apply move
                 const d = dirVectors[bestMove];
                 ghost.x += d.x;
                 ghost.y += d.y;
                 ghost.dir = bestMove;
 
-                // Check collision with Pac-Man
                 if (ghost.x === pacman.x && ghost.y === pacman.y) {
                     if (ghostsVulnerable) {
-                        // Eat ghost - respawn at center
                         ghost.x = 9 + (index % 2);
                         ghost.y = 10 + Math.floor(index / 2);
                         score += 200 * currentLevel;
+                        ghostsEatenInPowerMode++;
                         playSound('ghost');
+                        createParticles(ghost.x, ghost.y, '#2143DF', 20);
+                        checkAchievements();
                     } else {
-                        // Pac-Man dies
                         lives--;
                         document.getElementById('livesValue').textContent = lives;
+                        screenShake();
+                        createParticles(pacman.x, pacman.y, '#FF0000', 25);
                         
                         if (lives <= 0) {
                             playSound('death');
                             endGame();
                         } else {
-                            // Reset positions but keep level
+                            deathsInCurrentLevel++;
                             pacman = { x: 10, y: 16, dir: 'left', nextDir: 'left' };
                             ghosts.forEach((g, i) => {
                                 g.x = 9 + (i % 2);
@@ -946,10 +1639,14 @@
             gameOver = true;
             gameRunning = false;
             
-            // Update high score
             if (score > highScore) {
                 highScore = score;
                 localStorage.setItem('pacman_highscore', highScore);
+            }
+            
+            // Check survivor achievement
+            if (lives === 1 && currentLevel >= 3 && !achievements.find(a => a.id === 'survivor').unlocked) {
+                unlockAchievement('survivor');
             }
             
             document.getElementById('finalScore').textContent = score;
@@ -965,12 +1662,13 @@
         }
 
         function restartGame() {
-            // Reset everything
             currentLevel = 1;
             lives = 3;
             score = 0;
             gameOver = false;
             levelTransition = false;
+            ghostsEatenInPowerMode = 0;
+            deathsInCurrentLevel = 0;
             
             document.getElementById('gameOver').style.display = 'none';
             document.getElementById('levelComplete').style.display = 'none';
@@ -1002,6 +1700,12 @@
             
             if (e.key === 'q' || e.key === 'Q') {
                 endGame();
+            }
+            
+            if (e.key === 'p' || e.key === 'P' || e.key === 'Escape') {
+                if (gameStarted && !gameOver) {
+                    togglePause();
+                }
             }
         });
 
@@ -1041,30 +1745,29 @@
             });
         });
         
-        document.getElementById('pauseBtn').addEventListener('click', togglePause);
-        document.getElementById('startBtn').addEventListener('click', startGame);
+        document.getElementById('pauseBtnMobile').addEventListener('click', togglePause);
+        document.getElementById('startBtn').addEventListener('click', startGameWithCountdown);
         
         function togglePause() {
-            if (!gameStarted) {
-                startGame();
-                return;
-            }
+            if (!gameStarted || gameOver || levelTransition) return;
             
-            if (gameOver) {
-                restartGame();
-                return;
-            }
+            isPaused = !isPaused;
+            document.getElementById('pauseMenu').style.display = isPaused ? 'flex' : 'none';
             
-            if (levelTransition) return;
-            
-            gameRunning = !gameRunning;
-            document.getElementById('pauseBtn').innerHTML = gameRunning 
-                ? '<span>⏸</span><span>PAUSE</span>' 
-                : '<span>▶</span><span>RESUME</span>';
-            
-            if (gameRunning) {
+            if (!isPaused) {
                 gameLoop();
             }
+        }
+        
+        function openSettingsFromPause() {
+            document.getElementById('pauseMenu').style.display = 'none';
+            openSettings();
+        }
+        
+        function quitToMenu() {
+            isPaused = false;
+            document.getElementById('pauseMenu').style.display = 'none';
+            showMainMenu();
         }
         
         function toggleMute() {
@@ -1074,9 +1777,169 @@
                 ? '<span>🔇</span><span>MUTED</span>' 
                 : '<span>🔊</span><span>SOUND</span>';
         }
+        
+        // Settings functions
+        function openSettings() {
+            document.getElementById('settingsModal').style.display = 'flex';
+            
+            // Update UI to match current settings
+            document.getElementById('soundToggle').classList.toggle('active', settings.sound);
+            document.getElementById('volumeSlider').value = settings.volume * 100;
+            document.getElementById('difficultySelect').value = settings.difficulty;
+            document.getElementById('ghostNamesToggle').classList.toggle('active', settings.ghostNames);
+            document.getElementById('particlesToggle').classList.toggle('active', settings.particles);
+            document.getElementById('shakeToggle').classList.toggle('active', settings.shake);
+        }
+        
+        function closeSettings() {
+            document.getElementById('settingsModal').style.display = 'none';
+            saveSettings();
+        }
+        
+        function toggleSetting(setting) {
+            settings[setting] = !settings[setting];
+            document.getElementById(setting + 'Toggle').classList.toggle('active', settings[setting]);
+        }
+        
+        function updateVolume() {
+            settings.volume = document.getElementById('volumeSlider').value / 100;
+        }
+        
+        function updateDifficulty() {
+            settings.difficulty = document.getElementById('difficultySelect').value;
+        }
+        
+        function saveSettings() {
+            localStorage.setItem('pacman_settings', JSON.stringify(settings));
+        }
+        
+        // Tutorial
+        const tutorialSteps = [
+            {
+                title: "Welcome to Pac-Man! 🎮",
+                content: "Your goal is simple: eat all the dots while avoiding the ghosts!",
+                tip: "Tip: Each dot is worth 10 points."
+            },
+            {
+                title: "Movement 🕹️",
+                content: "Use Arrow Keys on desktop, or tap the D-pad on mobile to move Pac-Man.",
+                tip: "Plan your moves ahead - you can't reverse direction instantly!"
+            },
+            {
+                title: "Power Pellets 💊",
+                content: "The big flashing dots in corners are Power Pellets. They make ghosts vulnerable for a short time!",
+                tip: "Eat ghosts for bonus points: 200, 400, 800, 1600..."
+            },
+            {
+                title: "Ghost Personalities 👻",
+                content: "Each ghost has unique behavior:\n• Blinky (Red): Direct chase\n• Pinky (Pink): Ambush ahead\n• Inky (Cyan): Unpredictable\n• Clyde (Orange): Scatter when close",
+                tip: "Learn their patterns to outsmart them!"
+            },
+            {
+                title: "Level Progression 📈",
+                content: "Clear all dots to advance. Each level gets harder - ghosts speed up and power pellets last shorter!",
+                tip: "Survive as long as possible for high scores!"
+            },
+            {
+                title: "Achievements 🏆",
+                content: "Unlock achievements by completing challenges like eating ghosts, reaching levels, and scoring big!",
+                tip: "Check the Achievements panel to track your progress."
+            }
+        ];
+        
+        let currentTutorialStep = 0;
+        
+        function renderTutorialStep() {
+            const step = tutorialSteps[currentTutorialStep];
+            const container = document.getElementById('tutorialSteps');
+            container.innerHTML = `
+                <div class="tutorial-step">
+                    <h3>${step.title}</h3>
+                    <p>${step.content.replace(/\n/g, '<br>')}</p>
+                    <p class="tip">${step.tip}</p>
+                </div>
+            `;
+            
+            document.getElementById('tutorialProgress').textContent = 
+                `Step ${currentTutorialStep + 1} of ${tutorialSteps.length}`;
+            
+            document.querySelector('.prev-btn').disabled = currentTutorialStep === 0;
+            
+            const nextBtn = document.querySelector('.next-btn');
+            if (currentTutorialStep === tutorialSteps.length - 1) {
+                nextBtn.textContent = 'Start Game!';
+                nextBtn.className = 'start-btn';
+            } else {
+                nextBtn.textContent = 'Next →';
+                nextBtn.className = 'next-btn';
+            }
+        }
+        
+        function nextTutorialStep() {
+            if (currentTutorialStep < tutorialSteps.length - 1) {
+                currentTutorialStep++;
+                renderTutorialStep();
+            } else {
+                closeTutorial();
+                startGameWithCountdown();
+            }
+        }
+        
+        function prevTutorialStep() {
+            if (currentTutorialStep > 0) {
+                currentTutorialStep--;
+                renderTutorialStep();
+            }
+        }
+        
+        function openTutorial() {
+            currentTutorialStep = 0;
+            renderTutorialStep();
+            document.getElementById('tutorialModal').style.display = 'flex';
+        }
+        
+        function closeTutorial() {
+            document.getElementById('tutorialModal').style.display = 'none';
+        }
+        
+        // Achievements panel
+        function openAchievements() {
+            renderAchievements();
+            document.getElementById('achievementsPanel').style.display = 'block';
+        }
+        
+        function closeAchievements() {
+            document.getElementById('achievementsPanel').style.display = 'none';
+        }
+        
+        // Countdown before game starts
+        function startGameWithCountdown() {
+            document.getElementById('startScreen').classList.add('hidden');
+            document.getElementById('countdownOverlay').style.display = 'flex';
+            
+            let count = 3;
+            const countdownEl = document.getElementById('countdownNumber');
+            
+            const countdownInterval = setInterval(() => {
+                countdownEl.textContent = count;
+                countdownEl.style.animation = 'none';
+                countdownEl.offsetHeight; // Trigger reflow
+                countdownEl.style.animation = '';
+                
+                count--;
+                
+                if (count < 0) {
+                    clearInterval(countdownInterval);
+                    document.getElementById('countdownOverlay').style.display = 'none';
+                    initAudio();
+                    gameStarted = true;
+                    restartGame();
+                }
+            }, 1000);
+        }
 
         function gameLoop() {
-            if (!gameRunning || gameOver || levelTransition) return;
+            if (!gameRunning || gameOver || levelTransition || isPaused) return;
             
             movePacman();
             moveGhosts();
@@ -1097,6 +1960,11 @@
             restartGame();
         }
 
+        // Event listeners for menu buttons
+        document.getElementById('tutorialBtn').addEventListener('click', openTutorial);
+        document.getElementById('settingsBtn').addEventListener('click', openSettings);
+        document.getElementById('achievementsBtn').addEventListener('click', openAchievements);
+
         // Handle resize
         window.addEventListener('resize', () => {
             TILE_SIZE = getTileSize();
@@ -1112,6 +1980,14 @@
 
         // Draw initial state
         draw();
+        
+        // Initialize settings UI
+        document.getElementById('soundToggle').classList.toggle('active', settings.sound);
+        document.getElementById('volumeSlider').value = settings.volume * 100;
+        document.getElementById('difficultySelect').value = settings.difficulty;
+        document.getElementById('ghostNamesToggle').classList.toggle('active', settings.ghostNames);
+        document.getElementById('particlesToggle').classList.toggle('active', settings.particles);
+        document.getElementById('shakeToggle').classList.toggle('active', settings.shake);
     </script>
 </body>
 </html>
