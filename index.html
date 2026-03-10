@@ -210,6 +210,16 @@
             color: #888;
         }
         
+        .mode-controls {
+            font-size: 0.75rem;
+            color: #00FFFF;
+            margin-top: 0.5rem;
+            padding: 0.3rem 0.6rem;
+            background: rgba(0, 255, 255, 0.1);
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        
         #modeSelectScreen.hidden {
             display: none;
         }
@@ -957,6 +967,7 @@
                 <span class="mode-icon">🤝</span>
                 <span class="mode-title">Cooperative</span>
                 <span class="mode-desc">2P Team gameplay</span>
+                <span class="mode-controls">P1: Arrows | P2: WASD</span>
             </button>
         </div>
         <button class="menu-btn" onclick="backToMain()">← Back</button>
@@ -1104,17 +1115,20 @@
         background: rgba(0,0,0,0.95);
         border: 3px solid #FFD700;
         border-radius: 15px;
-        padding: 2rem;
+        padding: 1.5rem;
         max-width: 400px;
-        width: 90%;
-        max-height: 80vh;
+        width: 85%;
+        max-height: 70vh;
         overflow-y: auto;
         z-index: 400;
+        box-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
     ">
-        <h3 style="color: #FFD700; text-align: center; margin-bottom: 1rem;">🏆 LEADERBOARD</h3>
-        <ol id="leaderboardList" style="color: #fff; padding-left: 1.5rem;"></ol>
-        <button onclick="clearLeaderboard()" style="margin-top: 1rem; padding: 0.5rem 1rem; background: #ff4444; color: white; border: none; border-radius: 5px; cursor: pointer;">Clear All</button>
-        <button onclick="closeLeaderboard()" style="margin-top: 0.5rem; padding: 0.5rem 1rem; background: #555; color: white; border: none; border-radius: 5px; cursor: pointer;">Close</button>
+        <h3 style="color: #FFD700; text-align: center; margin-bottom: 1rem; font-size: 1.5rem;">🏆 LEADERBOARD</h3>
+        <ol id="leaderboardList" style="color: #fff; padding-left: 1.5rem; margin-bottom: 1rem;"></ol>
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 1rem;">
+            <button onclick="clearLeaderboard()" style="flex: 1; min-width: 120px; padding: 0.7rem 1rem; background: #ff4444; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">🗑️ Clear All</button>
+            <button onclick="closeLeaderboard()" style="flex: 1; min-width: 120px; padding: 0.7rem 1rem; background: #555; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">✖️ Close</button>
+        </div>
     </div>
     
     <!-- Level Complete Screen -->
@@ -1980,14 +1994,18 @@
             }
             
             if (leaderboard.length === 0) {
-                list.innerHTML = '<li style="color: #888;">No scores yet! Be the first!</li>';
+                list.innerHTML = '<li style="color: #888; padding: 0.5rem 0;">No scores yet! Be the first!</li>';
             } else {
                 list.innerHTML = leaderboard.map((entry, i) => 
-                    `<li style="margin-bottom: 0.5rem;">
-                        <span style="color: #FFD700;">#${i+1}</span> 
-                        <span style="color: #fff;">${entry.name}</span>: 
-                        <span style="color: #00FF00; font-weight: bold;">${entry.score}</span>
-                        <span style="color: #888; font-size: 0.8rem;">(Lvl ${entry.level}, ${entry.date})</span>
+                    `<li style="margin-bottom: 0.4rem; padding: 0.3rem 0; border-bottom: 1px solid #333; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center;">
+                        <div style="flex: 1; min-width: 150px;">
+                            <span style="color: #FFD700; font-weight: bold;">#${i+1}</span> 
+                            <span style="color: #fff; margin-left: 0.5rem;">${entry.name}</span>
+                        </div>
+                        <div style="text-align: right;">
+                            <span style="color: #00FF00; font-weight: bold; font-size: 1.1rem;">${entry.score}</span>
+                            <span style="color: #888; font-size: 0.75rem; display: block;">(Lvl ${entry.level}, ${entry.date})</span>
+                        </div>
                     </li>`
                 ).join('');
             }
