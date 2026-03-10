@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Pac-Man v2.4 - Bug Fixes & Polish</title>
+    <title>Pac-Man v2.5 - Multiplayer & Social</title>
     <style>
         * {
             margin: 0;
@@ -141,6 +141,76 @@
         }
         
         #startScreen.hidden {
+            display: none;
+        }
+        
+        /* Mode Selection Screen (Sprint 9) */
+        #modeSelectScreen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 100;
+        }
+        
+        #modeSelectScreen h1 {
+            color: #FFD700;
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .mode-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin: 2rem 0;
+            width: 100%;
+            max-width: 400px;
+        }
+        
+        .mode-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border: 2px solid #FFD700;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: #fff;
+        }
+        
+        .mode-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
+            background: linear-gradient(135deg, #16213e 0%, #1a1a2e 100%);
+        }
+        
+        .mode-icon {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .mode-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #FFD700;
+            margin-bottom: 0.3rem;
+        }
+        
+        .mode-desc {
+            font-size: 0.9rem;
+            color: #888;
+        }
+        
+        #modeSelectScreen.hidden {
             display: none;
         }
         
@@ -850,7 +920,7 @@
     <!-- Start Screen -->
     <div id="startScreen">
         <h1>PAC-MAN</h1>
-        <p class="version">v2.4 - Bug Fixes & Polish</p>
+        <p class="version">v2.5 - Multiplayer & Social</p>
         <p class="subtitle">Classic Arcade Game</p>
         <button id="startBtn" class="start-button">START GAME</button>
         <div class="menu-buttons">
@@ -866,6 +936,30 @@
         <p class="features">
             ✨ New: Tutorial • Settings • Achievements • Enhanced UX
         </p>
+    </div>
+    
+    <!-- Mode Selection Screen (Sprint 9) -->
+    <div id="modeSelectScreen" class="hidden">
+        <h1>SELECT MODE</h1>
+        <p class="version">v2.5 - Multiplayer & Social</p>
+        <div class="mode-buttons">
+            <button class="mode-btn" onclick="selectMode('classic')">
+                <span class="mode-icon">🎮</span>
+                <span class="mode-title">Classic</span>
+                <span class="mode-desc">Single player experience</span>
+            </button>
+            <button class="mode-btn" onclick="selectMode('competitive')">
+                <span class="mode-icon">⚔️</span>
+                <span class="mode-title">Competitive</span>
+                <span class="mode-desc">2P Turn-based battle</span>
+            </button>
+            <button class="mode-btn" onclick="selectMode('cooperative')">
+                <span class="mode-icon">🤝</span>
+                <span class="mode-title">Cooperative</span>
+                <span class="mode-desc">2P Team gameplay</span>
+            </button>
+        </div>
+        <button class="menu-btn" onclick="backToMain()">← Back</button>
     </div>
     
     <!-- Settings Modal -->
@@ -963,10 +1057,48 @@
         <h2>GAME OVER</h2>
         <p class="final-score">Final Score: <span id="finalScore">0</span></p>
         <p class="final-level">Reached Level: <span id="finalLevel">1</span></p>
+        
+        <!-- Competitive Mode Results -->
+        <div id="competitiveResults" class="hidden" style="margin: 1rem 0; padding: 1rem; background: rgba(255,215,0,0.1); border-radius: 10px;">
+            <h3 style="color: #FFD700;">⚔️ RESULTS</h3>
+            <p style="color: #fff;">P1: <span id="p1FinalScore">0</span> | P2: <span id="p2FinalScore">0</span></p>
+            <p id="winnerText" style="color: #00FF00; font-weight: bold; margin-top: 0.5rem;"></p>
+        </div>
+        
+        <!-- Cooperative Mode Results -->
+        <div id="cooperativeResults" class="hidden" style="margin: 1rem 0; padding: 1rem; background: rgba(0,255,0,0.1); border-radius: 10px;">
+            <h3 style="color: #00FF00;">🤝 TEAM SCORE</h3>
+            <p style="color: #fff;">Combined: <span id="teamFinalScore">0</span></p>
+        </div>
+        
         <div class="buttons">
             <button id="playAgain" onclick="restartGame()">Play Again</button>
+            <button id="shareBtn" onclick="shareScore()" style="background: #00AFF0;">📤 Share</button>
+            <button id="leaderboardBtn" onclick="showLeaderboard()" style="background: #FF6B35;">🏆 Top 10</button>
             <button id="mainMenu" onclick="showMainMenu()">Main Menu</button>
         </div>
+    </div>
+    
+    <!-- Leaderboard Panel (Sprint 9) -->
+    <div id="leaderboardPanel" class="hidden" style="
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(0,0,0,0.95);
+        border: 3px solid #FFD700;
+        border-radius: 15px;
+        padding: 2rem;
+        max-width: 400px;
+        width: 90%;
+        max-height: 80vh;
+        overflow-y: auto;
+        z-index: 400;
+    ">
+        <h3 style="color: #FFD700; text-align: center; margin-bottom: 1rem;">🏆 LEADERBOARD</h3>
+        <ol id="leaderboardList" style="color: #fff; padding-left: 1.5rem;"></ol>
+        <button onclick="clearLeaderboard()" style="margin-top: 1rem; padding: 0.5rem 1rem; background: #ff4444; color: white; border: none; border-radius: 5px; cursor: pointer;">Clear All</button>
+        <button onclick="closeLeaderboard()" style="margin-top: 0.5rem; padding: 0.5rem 1rem; background: #555; color: white; border: none; border-radius: 5px; cursor: pointer;">Close</button>
     </div>
     
     <!-- Level Complete Screen -->
@@ -1080,6 +1212,16 @@
         let gameOver = false;
         let gameStarted = false;
         let gameRunning = false;
+        
+        // Sprint 9 - Game Mode (Multiplayer & Social)
+        let gameMode = 'classic'; // classic, competitive, cooperative
+        let player2 = null; // Second player for 2P modes
+        let p1Score = 0;
+        let p2Score = 0;
+        let currentPlayer = 1; // For turn-based competitive mode
+        let p1Lives = 3;
+        let p2Lives = 3;
+        let sharedLives = 6; // For cooperative mode
         let mouthOpen = 0;
         let mouthDir = 1;
         let ghostsVulnerable = false;
@@ -1654,6 +1796,39 @@
             gameOver = true;
             gameRunning = false;
             
+            // Handle different game modes
+            if (gameMode === 'competitive') {
+                if (currentPlayer === 1) {
+                    p1Score = score;
+                    switchPlayer();
+                    return;
+                } else {
+                    p2Score = score;
+                    // Show competitive results
+                    document.getElementById('competitiveResults').classList.remove('hidden');
+                    document.getElementById('p1FinalScore').textContent = p1Score;
+                    document.getElementById('p2FinalScore').textContent = p2Score;
+                    
+                    let winnerText = '';
+                    if (p1Score > p2Score) winnerText = '🏆 PLAYER 1 WINS!';
+                    else if (p2Score > p1Score) winnerText = '🏆 PLAYER 2 WINS!';
+                    else winnerText = "🤝 IT'S A TIE!";
+                    document.getElementById('winnerText').textContent = winnerText;
+                    
+                    // Save both scores to leaderboard
+                    saveToLeaderboard('P1 - Competitive', p1Score);
+                    saveToLeaderboard('P2 - Competitive', p2Score);
+                }
+            } else if (gameMode === 'cooperative') {
+                const teamScore = score;
+                document.getElementById('cooperativeResults').classList.remove('hidden');
+                document.getElementById('teamFinalScore').textContent = teamScore;
+                saveToLeaderboard('Team - Cooperative', teamScore);
+            } else {
+                // Classic mode
+                saveToLeaderboard('Classic', score);
+            }
+            
             if (score > highScore) {
                 highScore = score;
                 localStorage.setItem('pacman_highscore', highScore);
@@ -1669,14 +1844,114 @@
             document.getElementById('gameOver').style.display = 'block';
         }
         
+        // Sprint 9 - Leaderboard Functions
+        function saveToLeaderboard(mode, score) {
+            const entry = {
+                name: mode,
+                score: score,
+                date: new Date().toISOString().split('T')[0],
+                level: currentLevel
+            };
+            
+            let leaderboard = [];
+            if (localStorage.getItem('pacman_leaderboard')) {
+                leaderboard = JSON.parse(localStorage.getItem('pacman_leaderboard'));
+            }
+            
+            leaderboard.push(entry);
+            leaderboard.sort((a, b) => b.score - a.score);
+            leaderboard = leaderboard.slice(0, 10); // Keep top 10
+            
+            localStorage.setItem('pacman_leaderboard', JSON.stringify(leaderboard));
+        }
+        
+        function showLeaderboard() {
+            const panel = document.getElementById('leaderboardPanel');
+            const list = document.getElementById('leaderboardList');
+            
+            let leaderboard = [];
+            if (localStorage.getItem('pacman_leaderboard')) {
+                leaderboard = JSON.parse(localStorage.getItem('pacman_leaderboard'));
+            }
+            
+            if (leaderboard.length === 0) {
+                list.innerHTML = '<li style="color: #888;">No scores yet! Be the first!</li>';
+            } else {
+                list.innerHTML = leaderboard.map((entry, i) => 
+                    `<li style="margin-bottom: 0.5rem;">
+                        <span style="color: #FFD700;">#${i+1}</span> 
+                        <span style="color: #fff;">${entry.name}</span>: 
+                        <span style="color: #00FF00; font-weight: bold;">${entry.score}</span>
+                        <span style="color: #888; font-size: 0.8rem;">(Lvl ${entry.level}, ${entry.date})</span>
+                    </li>`
+                ).join('');
+            }
+            
+            panel.classList.remove('hidden');
+            panel.style.display = 'block';
+        }
+        
+        function closeLeaderboard() {
+            document.getElementById('leaderboardPanel').classList.add('hidden');
+            document.getElementById('leaderboardPanel').style.display = 'none';
+        }
+        
+        function clearLeaderboard() {
+            if (confirm('Clear all leaderboard scores?')) {
+                localStorage.removeItem('pacman_leaderboard');
+                showLeaderboard();
+            }
+        }
+        
+        // Sprint 9 - Share Score Function
+        function shareScore() {
+            const shareText = `🎮 I scored ${score} points in Pac-Man v2.5! Reached Level ${currentLevel}. Can you beat me?`;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Pac-Man Score',
+                    text: shareText,
+                    url: window.location.href
+                }).catch(() => {
+                    fallbackShare(shareText);
+                });
+            } else {
+                fallbackShare(shareText);
+            }
+        }
+        
+        function fallbackShare(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('📋 Score copied to clipboard!\n\n' + text);
+            }).catch(() => {
+                prompt('Copy this text:', text);
+            });
+        }
+        
         function showMainMenu() {
             document.getElementById('gameOver').style.display = 'none';
+            document.getElementById('competitiveResults').classList.add('hidden');
+            document.getElementById('cooperativeResults').classList.add('hidden');
+            closeLeaderboard();
             document.getElementById('startScreen').classList.remove('hidden');
+            gameMode = 'classic';
             gameStarted = false;
             gameOver = false;
         }
 
         function restartGame() {
+            // Handle different game modes
+            if (gameMode === 'competitive') {
+                // Reset for new competitive game
+                p1Score = 0;
+                p2Score = 0;
+                p1Lives = 3;
+                p2Lives = 3;
+                currentPlayer = 1;
+            } else if (gameMode === 'cooperative') {
+                sharedLives = 6;
+            }
+            
             currentLevel = 1;
             lives = 3;
             score = 0;
@@ -1685,6 +1960,9 @@
             ghostsEatenInPowerMode = 0;
             deathsInCurrentLevel = 0;
             
+            // Hide results panels
+            document.getElementById('competitiveResults').classList.add('hidden');
+            document.getElementById('cooperativeResults').classList.add('hidden');
             document.getElementById('gameOver').style.display = 'none';
             document.getElementById('levelComplete').style.display = 'none';
             document.getElementById('livesValue').textContent = lives;
@@ -1761,7 +2039,71 @@
         });
         
         document.getElementById('pauseBtnMobile').addEventListener('click', togglePause);
-        document.getElementById('startBtn').addEventListener('click', startGameWithCountdown);
+        document.getElementById('startBtn').addEventListener('click', showModeSelection);
+        
+        // Sprint 9 - Mode Selection Functions
+        function showModeSelection() {
+            document.getElementById('startScreen').classList.add('hidden');
+            document.getElementById('modeSelectScreen').classList.remove('hidden');
+        }
+        
+        function backToMain() {
+            document.getElementById('modeSelectScreen').classList.add('hidden');
+            document.getElementById('startScreen').classList.remove('hidden');
+        }
+        
+        function selectMode(mode) {
+            gameMode = mode;
+            document.getElementById('modeSelectScreen').classList.add('hidden');
+            
+            // Initialize player state based on mode
+            if (mode === 'competitive') {
+                p1Score = 0;
+                p2Score = 0;
+                p1Lives = 3;
+                p2Lives = 3;
+                currentPlayer = 1;
+                alert('⚔️ COMPETITIVE MODE\n\nPlayer 1 goes first!\nHighest score wins!');
+            } else if (mode === 'cooperative') {
+                sharedLives = 6;
+                alert('🤝 COOPERATIVE MODE\n\nWork together!\nShare 6 lives total!');
+            }
+            
+            startGameWithCountdown();
+        }
+        
+        function switchPlayer() {
+            if (gameMode !== 'competitive') return;
+            
+            currentPlayer = currentPlayer === 1 ? 2 : 1;
+            
+            // Show player switch message
+            const switchMsg = document.createElement('div');
+            switchMsg.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: rgba(0,0,0,0.95);
+                border: 3px solid #FFD700;
+                border-radius: 15px;
+                padding: 2rem;
+                text-align: center;
+                z-index: 500;
+            `;
+            switchMsg.innerHTML = `
+                <h2 style="color: #FFD700; font-size: 2rem;">PLAYER ${currentPlayer}'S TURN</h2>
+                <p style="color: #fff; margin-top: 1rem;">P1: ${p1Score} | P2: ${p2Score}</p>
+                <button onclick="this.parentElement.remove(); startGameWithCountdown();" 
+                    style="margin-top: 1.5rem; padding: 1rem 2rem; font-size: 1.2rem; background: #FFD700; border: none; border-radius: 25px; cursor: pointer;">
+                    START
+                </button>
+            `;
+            document.body.appendChild(switchMsg);
+            
+            gameRunning = false;
+            gameStarted = false;
+        }
         
         function togglePause() {
             if (!gameStarted || gameOver || levelTransition) return;
