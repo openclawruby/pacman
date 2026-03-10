@@ -1007,6 +1007,22 @@
                 </div>
             </div>
             
+            <div class="setting-group">
+                <h3>♿ Accessibility (Sprint 9)</h3>
+                <div class="setting-item">
+                    <label>Colorblind Mode</label>
+                    <div class="toggle-switch" id="colorblindToggle" onclick="toggleSetting('colorblind')"></div>
+                </div>
+                <div class="setting-item">
+                    <label>Larger Pac-Man</label>
+                    <div class="toggle-switch" id="largePacmanToggle" onclick="toggleSetting('largePacman')"></div>
+                </div>
+                <div class="setting-item">
+                    <label>Reduced Animation</label>
+                    <div class="toggle-switch" id="reducedAnimToggle" onclick="toggleSetting('reducedAnim')"></div>
+                </div>
+            </div>
+            
             <button class="close-btn" onclick="closeSettings()">Done</button>
         </div>
     </div>
@@ -1136,7 +1152,10 @@
             difficulty: 'normal',
             ghostNames: true,
             particles: true,
-            shake: false
+            shake: false,
+            colorblind: false,
+            largePacman: false,
+            reducedAnim: false
         };
         
         // Load settings from localStorage
@@ -1200,6 +1219,7 @@
         ];
 
         let pacman = { x: 10, y: 16, dir: 'left', nextDir: 'left' };
+        let pacman2 = null; // Second player for cooperative mode
         
         let ghosts = [
             { x: 9, y: 10, color: '#FF0000', dir: 'up', type: GHOST_TYPES.BLINKY, name: 'Blinky', speed: 1 },
@@ -1491,26 +1511,65 @@
                 }
             }
 
-            // Draw Pac-Man
+            // Draw Pac-Man (Player 1)
             const px = pacman.x * TILE_SIZE + TILE_SIZE / 2;
             const py = pacman.y * TILE_SIZE + TILE_SIZE / 2;
             const angle = { up: -Math.PI/2, down: Math.PI/2, left: Math.PI, right: 0 };
             
-            mouthOpen += 0.2 * mouthDir;
-            if (mouthOpen > 0.4 || mouthOpen < 0) mouthDir *= -1;
+            // Accessibility: Larger Pac-Man
+            const pacmanSize = settings.largePacman ? (TILE_SIZE/2 - 1) : (TILE_SIZE/2 - 2);
             
-            ctx.fillStyle = '#FFFF00';
+            // Accessibility: Reduced animation
+            if (!settings.reducedAnim) {
+                mouthOpen += 0.2 * mouthDir;
+                if (mouthOpen > 0.4 || mouthOpen < 0) mouthDir *= -1;
+            } else {
+                mouthOpen = 0.2;
+            }
+            
+            // Accessibility: Colorblind mode - high contrast yellow
+            ctx.fillStyle = settings.colorblind ? '#FFFF99' : '#FFFF00';
             ctx.beginPath();
-            ctx.arc(px, py, TILE_SIZE/2 - 2, angle[pacman.dir] + mouthOpen, angle[pacman.dir] + Math.PI * 2 - mouthOpen);
+            ctx.arc(px, py, pacmanSize, angle[pacman.dir] + mouthOpen, angle[pacman.dir] + Math.PI * 2 - mouthOpen);
             ctx.lineTo(px, py);
             ctx.fill();
+            
+            // Draw Pac-Man 2 (Cooperative Mode - Player 2)
+            if (gameMode === 'cooperative' && pacman2) {
+                const p2x = pacman2.x * TILE_SIZE + TILE_SIZE / 2;
+                const p2y = pacman2.y * TILE_SIZE + TILE_SIZE / 2;
+                
+                // Accessibility: Colorblind mode - distinct pink
+                ctx.fillStyle = settings.colorblind ? '#FF99CC' : (pacman2.color || '#FF69B4');
+                ctx.beginPath();
+                ctx.arc(p2x, p2y, pacmanSize, angle[pacman2.dir] + mouthOpen, angle[pacman2.dir] + Math.PI * 2 - mouthOpen);
+                ctx.lineTo(p2x, p2y);
+                ctx.fill();
+                
+                // P2 indicator
+                ctx.fillStyle = '#FF69B4';
+                ctx.font = 'bold 10px monospace';
+                ctx.fillText('P2', p2x - 6, p2y - 8);
+            }
 
             // Draw Ghosts
             ghosts.forEach(ghost => {
                 const gx = ghost.x * TILE_SIZE;
                 const gy = ghost.y * TILE_SIZE;
                 
-                ctx.fillStyle = ghostsVulnerable ? '#2143DF' : ghost.color;
+                // Accessibility: Colorblind mode - distinct ghost colors
+                let ghostColor = ghost.color;
+                if (settings.colorblind) {
+                    const colorblindColors = {
+                        '#FF0000': '#FF4444', // Blinky - brighter red
+                        '#FFB8FF': '#4488FF', // Pinky - blue
+                        '#00FFFF': '#44FF44', // Inky - green
+                        '#FFB852': '#FFAA00'  // Clyde - orange
+                    };
+                    ghostColor = colorblindColors[ghost.color] || ghost.color;
+                }
+                
+                ctx.fillStyle = ghostsVulnerable ? '#2143DF' : ghostColor;
                 ctx.beginPath();
                 ctx.arc(gx + TILE_SIZE/2, gy + TILE_SIZE/2 - 2, TILE_SIZE/2 - 3, Math.PI, 0);
                 ctx.lineTo(gx + TILE_SIZE - 3, gy + TILE_SIZE);
@@ -1570,14 +1629,24 @@
                 right: { x: 1, y: 0 }
             };
 
-            const next = dirs[pacman.nextDir];
-            if (maze[pacman.y + next.y][pacman.x + next.x] !== WALL) {
-                pacman.dir = pacman.nextDir;
+            // Move Player 1
+            moveSinglePacman(pacman, dirs);
+            
+            // Move Player 2 (Cooperative Mode)
+            if (gameMode === 'cooperative' && pacman2) {
+                moveSinglePacman(pacman2, dirs);
+            }
+        }
+        
+        function moveSinglePacman(p, dirs) {
+            const next = dirs[p.nextDir];
+            if (maze[p.y + next.y][p.x + next.x] !== WALL) {
+                p.dir = p.nextDir;
             }
 
-            const d = dirs[pacman.dir];
-            let newX = pacman.x + d.x;
-            let newY = pacman.y + d.y;
+            const d = dirs[p.dir];
+            let newX = p.x + d.x;
+            let newY = p.y + d.y;
             
             // Tunnel wrap-around (left/right pass-through)
             if (newX < 0) {
@@ -1587,23 +1656,23 @@
             }
 
             if (maze[newY][newX] !== WALL) {
-                pacman.x = newX;
-                pacman.y = newY;
+                p.x = newX;
+                p.y = newY;
 
-                if (maze[pacman.y][pacman.x] === DOT) {
-                    maze[pacman.y][pacman.x] = EMPTY;
+                if (maze[p.y][p.x] === DOT) {
+                    maze[p.y][p.x] = EMPTY;
                     score += 10;
                     playSound('eat');
                     checkLevelComplete();
                     checkAchievements();
                 }
                 
-                if (maze[pacman.y][pacman.x] === POWER) {
-                    maze[pacman.y][pacman.x] = EMPTY;
+                if (maze[p.y][p.x] === POWER) {
+                    maze[p.y][p.x] = EMPTY;
                     score += 50;
                     playSound('power');
                     activatePowerMode();
-                    createParticles(pacman.x, pacman.y, '#FFD700', 15);
+                    createParticles(p.x, p.y, '#FFD700', 15);
                 }
             }
         }
@@ -1761,20 +1830,54 @@
                 
                 ghost.dir = bestMove;
 
-                if (ghost.x === pacman.x && ghost.y === pacman.y) {
-                    if (ghostsVulnerable) {
-                        ghost.x = 9 + (index % 2);
-                        ghost.y = 10 + Math.floor(index / 2);
-                        score += 200 * currentLevel;
-                        ghostsEatenInPowerMode++;
-                        playSound('ghost');
-                        createParticles(ghost.x, ghost.y, '#2143DF', 20);
-                        checkAchievements();
+                // Check collision with Player 1
+                checkGhostCollision(ghost, index, pacman);
+                
+                // Check collision with Player 2 (Cooperative Mode)
+                if (gameMode === 'cooperative' && pacman2) {
+                    checkGhostCollision(ghost, index, pacman2, true);
+                }
+            });
+        }
+        
+        function checkGhostCollision(ghost, index, p, isP2 = false) {
+            if (ghost.x === p.x && ghost.y === p.y) {
+                if (ghostsVulnerable) {
+                    ghost.x = 9 + (index % 2);
+                    ghost.y = 10 + Math.floor(index / 2);
+                    score += 200 * currentLevel;
+                    ghostsEatenInPowerMode++;
+                    playSound('ghost');
+                    createParticles(ghost.x, ghost.y, '#2143DF', 20);
+                    checkAchievements();
+                } else {
+                    // Handle life loss based on game mode
+                    if (gameMode === 'cooperative') {
+                        sharedLives--;
+                        document.getElementById('livesValue').textContent = sharedLives;
+                        
+                        if (sharedLives <= 0) {
+                            playSound('death');
+                            endGame();
+                        } else {
+                            deathsInCurrentLevel++;
+                            // Reset the Pac-Man that was caught
+                            if (isP2 && pacman2) {
+                                pacman2 = { x: 9, y: 16, dir: 'right', nextDir: 'right', color: '#FF69B4' };
+                            } else {
+                                pacman = { x: 10, y: 16, dir: 'left', nextDir: 'left' };
+                            }
+                            ghosts.forEach((g, i) => {
+                                g.x = 9 + (i % 2);
+                                g.y = 10 + Math.floor(i / 2);
+                            });
+                        }
                     } else {
+                        // Classic or Competitive mode
                         lives--;
                         document.getElementById('livesValue').textContent = lives;
                         screenShake();
-                        createParticles(pacman.x, pacman.y, '#FF0000', 25);
+                        createParticles(p.x, p.y, '#FF0000', 25);
                         
                         if (lives <= 0) {
                             playSound('death');
@@ -1789,6 +1892,8 @@
                         }
                     }
                 }
+            }
+        }
             });
         }
 
@@ -1986,8 +2091,22 @@
                 ArrowRight: 'right'
             };
             
+            const p2KeyMap = {
+                w: 'up', W: 'up',
+                s: 'down', S: 'down',
+                a: 'left', A: 'left',
+                d: 'right', D: 'right'
+            };
+            
+            // Player 1 controls (Arrow keys)
             if (keyMap[e.key]) {
                 pacman.nextDir = keyMap[e.key];
+                e.preventDefault();
+            }
+            
+            // Player 2 controls (WASD) - Cooperative mode only
+            if (gameMode === 'cooperative' && pacman2 && p2KeyMap[e.key]) {
+                pacman2.nextDir = p2KeyMap[e.key];
                 e.preventDefault();
             }
             
@@ -2063,10 +2182,15 @@
                 p1Lives = 3;
                 p2Lives = 3;
                 currentPlayer = 1;
+                pacman2 = null;
                 alert('⚔️ COMPETITIVE MODE\n\nPlayer 1 goes first!\nHighest score wins!');
             } else if (mode === 'cooperative') {
                 sharedLives = 6;
-                alert('🤝 COOPERATIVE MODE\n\nWork together!\nShare 6 lives total!');
+                // Initialize second Pac-Man for cooperative mode
+                pacman2 = { x: 9, y: 16, dir: 'right', nextDir: 'right', color: '#FF69B4' };
+                alert('🤝 COOPERATIVE MODE\n\nPlayer 1: Yellow | Player 2: Pink\nShare 6 lives total!');
+            } else {
+                pacman2 = null;
             }
             
             startGameWithCountdown();
@@ -2146,6 +2270,10 @@
             document.getElementById('ghostNamesToggle').classList.toggle('active', settings.ghostNames);
             document.getElementById('particlesToggle').classList.toggle('active', settings.particles);
             document.getElementById('shakeToggle').classList.toggle('active', settings.shake);
+            // Accessibility settings (Sprint 9)
+            document.getElementById('colorblindToggle').classList.toggle('active', settings.colorblind);
+            document.getElementById('largePacmanToggle').classList.toggle('active', settings.largePacman);
+            document.getElementById('reducedAnimToggle').classList.toggle('active', settings.reducedAnim);
         }
         
         function closeSettings() {
