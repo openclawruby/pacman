@@ -937,7 +937,7 @@
         <h1>PAC-MAN</h1>
         <p class="version">v2.5 - Multiplayer & Social</p>
         <p class="subtitle">Classic Arcade Game</p>
-        <button id="startBtn" class="start-button">START GAME</button>
+        <button id="startBtn" class="start-button" onclick="showModeSelection()">START GAME</button>
         <div class="menu-buttons">
             <button class="menu-btn" id="tutorialBtn">📚 Tutorial</button>
             <button class="menu-btn" id="settingsBtn">⚙️ Settings</button>
@@ -2193,7 +2193,6 @@
         });
         
         document.getElementById('pauseBtnMobile').addEventListener('click', togglePause);
-        document.getElementById('startBtn').addEventListener('click', showModeSelection);
         
         // Sprint 9 - Mode Selection Functions
         function showModeSelection() {
