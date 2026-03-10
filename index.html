@@ -1144,9 +1144,6 @@
     </div>
 
     <script>
-        // Wait for DOM to be fully loaded
-        document.addEventListener('DOMContentLoaded', () => {
-        
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         
@@ -2519,8 +2516,6 @@
         document.getElementById('colorblindToggle').classList.toggle('active', settings.colorblind);
         document.getElementById('largePacmanToggle').classList.toggle('active', settings.largePacman);
         document.getElementById('reducedAnimToggle').classList.toggle('active', settings.reducedAnim);
-        
-        }); // End DOMContentLoaded
     </script>
 </body>
 </html>
