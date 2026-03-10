@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pac-Man v2.5 - TEST VERSION</title>
+    <title>Pac-Man v2.5 - TEST v2</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -29,42 +29,58 @@
             margin: 0.5rem;
         }
         .btn:hover { transform: scale(1.05); }
-        #output { margin-top: 2rem; color: #0f0; font-size: 1.2rem; text-align: center; }
+        #output { margin-top: 2rem; color: #f00; font-size: 1.2rem; text-align: center; }
         #debug { margin-top: 1rem; color: #888; font-size: 0.9rem; }
     </style>
 </head>
 <body>
-    <h1>🎮 PAC-MAN TEST</h1>
-    <p style="color: #888; margin-bottom: 2rem;">Click the button to test if JavaScript works</p>
+    <h1>🎮 PAC-MAN TEST v2</h1>
+    <p style="color: #888; margin-bottom: 2rem;">Testing JavaScript without inline handlers</p>
     
-    <button class="btn" onclick="handleStart()">START GAME</button>
+    <button id="startBtn" class="btn">START GAME</button>
     
-    <div id="output">Waiting for click...</div>
+    <div id="output">Status: Loading...</div>
     <div id="debug"></div>
 
     <script>
-        // Debug info
-        const debug = document.getElementById('debug');
-        debug.innerHTML = 'Script loaded at: ' + new Date().toLocaleTimeString();
-        console.log('✅ Script loaded successfully');
-        
-        function handleStart() {
-            console.log('🔵 Button clicked!');
-            const output = document.getElementById('output');
-            output.innerHTML = '✅ Button works! Function executed at: ' + new Date().toLocaleTimeString();
-            output.style.color = '#00FF00';
+        (function() {
+            console.log('🔵 IIFE started');
             
-            // Test DOM manipulation
-            setTimeout(() => {
-                output.innerHTML += '<br>🎮 Redirecting to game...';
-            }, 1000);
-        }
-        
-        // Test on load
-        window.addEventListener('load', () => {
-            console.log('✅ Page fully loaded');
-            debug.innerHTML += '<br>Page loaded: ' + performance.now().toFixed(2) + 'ms';
-        });
+            // Wait for DOM
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init);
+            } else {
+                init();
+            }
+            
+            function init() {
+                console.log('🔵 init() called');
+                const btn = document.getElementById('startBtn');
+                const output = document.getElementById('output');
+                const debug = document.getElementById('debug');
+                
+                if (!btn) {
+                    output.innerHTML = '❌ ERROR: Button not found!';
+                    console.error('Button not found');
+                    return;
+                }
+                
+                debug.innerHTML = '✅ Script running | Time: ' + new Date().toLocaleTimeString();
+                output.innerHTML = 'Status: Ready - Click the button!';
+                output.style.color = '#00FF00';
+                
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    console.log('🔵 Button click detected!');
+                    output.innerHTML = '✅ Button works! ' + new Date().toLocaleTimeString();
+                    setTimeout(() => {
+                        output.innerHTML += '<br>🎮 Success!';
+                    }, 500);
+                });
+                
+                console.log('✅ Event listener attached');
+            }
+        })();
     </script>
 </body>
 </html>
