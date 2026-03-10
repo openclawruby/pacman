@@ -1256,6 +1256,10 @@
         let p1Lives = 3;
         let p2Lives = 3;
         let sharedLives = 6; // For cooperative mode
+        let lives = 3; // Classic mode lives
+        
+        // Collision cooldown to prevent multiple deaths in same frame
+        let collisionCooldown = false;
         let mouthOpen = 0;
         let mouthDir = 1;
         let ghostsVulnerable = false;
@@ -1855,6 +1859,9 @@
         }
         
         function checkGhostCollision(ghost, index, p, isP2 = false) {
+            // Prevent multiple collisions in same frame (collision cooldown)
+            if (collisionCooldown) return;
+            
             if (ghost.x === p.x && ghost.y === p.y) {
                 if (ghostsVulnerable) {
                     ghost.x = 9 + (index % 2);
@@ -1865,6 +1872,10 @@
                     createParticles(ghost.x, ghost.y, '#2143DF', 20);
                     checkAchievements();
                 } else {
+                    // Set collision cooldown to prevent rapid multiple deaths
+                    collisionCooldown = true;
+                    setTimeout(() => { collisionCooldown = false; }, 500);
+                    
                     // Handle life loss based on game mode
                     if (gameMode === 'cooperative') {
                         sharedLives--;
@@ -2201,13 +2212,17 @@
                 p2Lives = 3;
                 currentPlayer = 1;
                 pacman2 = null;
+                lives = 3;
                 alert('⚔️ COMPETITIVE MODE\n\nPlayer 1 goes first!\nHighest score wins!');
             } else if (mode === 'cooperative') {
                 sharedLives = 6;
+                lives = 3; // Reset for cooperative too
                 // Initialize second Pac-Man for cooperative mode
                 pacman2 = { x: 9, y: 16, dir: 'right', nextDir: 'right', color: '#FF69B4' };
                 alert('🤝 COOPERATIVE MODE\n\nPlayer 1: Yellow | Player 2: Pink\nShare 6 lives total!');
             } else {
+                // Classic mode
+                lives = 3;
                 pacman2 = null;
             }
             
