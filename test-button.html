@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Button Test</title>
+    <style>
+        body { background: #000; color: #fff; display: flex; justify-content: center; align-items: center; height: 100vh; flex-direction: column; }
+        .btn { padding: 20px 40px; font-size: 24px; background: #FFFF00; border: none; border-radius: 50px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Pac-Man Test</h1>
+    <button class="btn" onclick="testClick()">START GAME</button>
+    <div id="output" style="margin-top: 20px; color: #0f0;"></div>
+    
+    <script>
+        console.log('Script loaded!');
+        
+        function testClick() {
+            console.log('Button clicked!');
+            document.getElementById('output').innerHTML = 'Button works! ' + new Date().toLocaleTimeString();
+            alert('Button clicked successfully!');
+        }
+        
+        console.log('Script finished loading');
+    </script>
+</body>
+</html>
